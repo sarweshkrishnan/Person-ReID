@@ -108,6 +108,8 @@ def main():
     image_datasets = {}
     image_datasets['train'] = datasets.ImageFolder(os.path.join(data_dir, 'train' + train_all),
                                             data_transforms['train'])
+
+    
     image_datasets['val'] = datasets.ImageFolder(os.path.join(data_dir, 'val'),
                                             data_transforms['val'])
 
@@ -117,10 +119,29 @@ def main():
     dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
     class_names = image_datasets['train'].classes
 
+    print("dataset_sizes :")
+    print(dataset_sizes)
+
+    print("dataset_sizes :")
+    print(len(dataset_sizes))
+
+    print("IMAGE_CLASSES : ")
+    print(class_names)
+
+
     use_gpu = torch.cuda.is_available()
 
     since = time.time()
     inputs, classes = next(iter(dataloaders['train']))
+
+    
+    print("IMAGE_inputs : ")
+    print(inputs)
+    
+    print("IMAGE_inputs : ")
+    print(classes)
+
+
     print(time.time()-since)
     ######################################################################
     # Training the model

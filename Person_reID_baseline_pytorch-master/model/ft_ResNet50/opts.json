@@ -5,7 +5,7 @@
  "train_all": true,
  "color_jitter": false,
  "batchsize": 32,
- "erasing_p": 0.5,
+ "erasing_p": 0,
  "use_dense": false,
  "PCB": false
 }
