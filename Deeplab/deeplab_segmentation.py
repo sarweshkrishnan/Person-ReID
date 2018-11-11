@@ -12,9 +12,9 @@ import numpy as np
 from PIL import Image
 
 import tensorflow as tf
+import cv2
 
 #@title Helper methods
-
 
 class DeepLabModel(object):
   """Class to load deeplab model and run inference."""
@@ -192,7 +192,6 @@ def main():
     _SAMPLE_URL = ('https://github.com/tensorflow/models/blob/master/research/'
                 'deeplab/g3doc/img/%s.jpg?raw=true')
 
-
     def run_visualization(url):
         """Inferences DeepLab model and visualizes result."""
         try:
@@ -205,28 +204,81 @@ def main():
 
         print('running deeplab on image %s...' % url)
         resized_im, seg_map = MODEL.run(original_im)
+   
+        seg_image = Image.fromarray(label_to_color_image(seg_map).astype(np.uint8).astype('uint8'), 'RGB')
+        
+        print(np.shape(seg_image))
+        print(type(seg_image))
+        print(type(resized_im))
 
+        print(np.shape(convert_to_cv2_img(resized_im)))
+        print(np.shape(convert_to_cv2_img(original_im)))
+        print(np.shape(convert_to_cv2_img(seg_image)))
+    
+        process_image(convert_to_cv2_img(resized_im), convert_to_cv2_img(seg_image))
         vis_segmentation(resized_im, seg_map)
     
+    def convert_to_cv2_img(pil_image):
+      pil_image = pil_image.convert('RGB') 
+      open_cv_image = np.array(pil_image) 
+      # Convert RGB to BGR 
+      open_cv_image = open_cv_image[:, :, ::-1].copy() 
+      return open_cv_image
+
+    def remove_background(dir_path):
+      # train_path = download_path + '\\bounding_box_train'
+      # train_save_path = download_path + '\\pytorch\\train_all'
+      # if not os.path.isdir(train_save_path):
+      #     os.mkdir(train_save_path)
+
+      # for root, dirs, files in os.walk(train_path, topdown=True):
+      #     for name in files:
+      #         if not name[-3:]=='jpg':
+      #             continue
+      #         ID  = name.split('_')
+      #         src_path = train_path + '\\' + name
+      #         dst_path = train_save_path + '\\' + ID[0]
+      #         if not os.path.isdir(dst_path):
+      #             os.mkdir(dst_path)
+      #         copyfile(src_path, dst_path + '\\' + name)
+
+    def process_image(original_im, mask_im):
+        try:
+            # get filename and kernel size values from command line
+            img = original_im
+            mask = mask_im
+            k = 7
+
+            # read and display the original image
+            cv2.namedWindow("original", cv2.WINDOW_NORMAL)
+            cv2.imshow("original", img)
+            # cv2.waitKey(1000)
+
+            # blur and grayscale before thresholding
+            blur = cv2.cvtColor(mask_im, cv2.COLOR_BGR2GRAY)
+            blur = cv2.GaussianBlur(blur, (k, k), 0)
+
+            # perform adaptive thresholding
+            (t, maskLayer) = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY +
+              cv2.THRESH_OTSU)
+
+            # make a mask suitable for color images
+            mask = cv2.merge([maskLayer, maskLayer, maskLayer])
+
+            cv2.namedWindow("mask", cv2.WINDOW_NORMAL)
+            cv2.imshow("mask", mask)
+            # cv2.waitKey(1000)
+
+            image_rgb_nobg = cv2.bitwise_and(img, mask)
+            cv2.namedWindow("selected", cv2.WINDOW_NORMAL)
+            cv2.imshow("selected", image_rgb_nobg)
+            cv2.waitKey(5000)
+        except IOError:
+            print('Cannot open image!')
+            return
+
     image_url = IMAGE_URL or _SAMPLE_URL % SAMPLE_IMAGE
     run_visualization(image_url)
 
-
 if __name__ == '__main__':
     main()
-
-    train_path = download_path + '\\bounding_box_train'
-    train_save_path = download_path + '\\pytorch\\train_all'
-    if not os.path.isdir(train_save_path):
-        os.mkdir(train_save_path)
-
-    for root, dirs, files in os.walk(train_path, topdown=True):
-        for name in files:
-            if not name[-3:]=='jpg':
-                continue
-            ID  = name.split('_')
-            src_path = train_path + '\\' + name
-            dst_path = train_save_path + '\\' + ID[0]
-            if not os.path.isdir(dst_path):
-                os.mkdir(dst_path)
-            copyfile(src_path, dst_path + '\\' + name)
