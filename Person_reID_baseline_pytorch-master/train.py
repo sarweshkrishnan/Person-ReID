@@ -119,13 +119,13 @@ def main():
     dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
     class_names = image_datasets['train'].classes
 
-    print("dataset_sizes :")
+    print("dataset_sizes .........................................:")
     print(dataset_sizes)
 
-    print("dataset_sizes :")
+    print("length of dataset_sizes .............................. :")
     print(len(dataset_sizes))
 
-    print("IMAGE_CLASSES : ")
+    print("IMAGE_CLASSES .........................................:")
     print(class_names)
 
 
@@ -135,10 +135,10 @@ def main():
     inputs, classes = next(iter(dataloaders['train']))
 
     
-    print("IMAGE_inputs : ")
+    print("IMAGE_inputs........................................ :")
     print(inputs)
     
-    print("IMAGE_inputs : ")
+    print("CLASSES............................................. :")
     print(classes)
 
 
@@ -198,11 +198,20 @@ def main():
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)
 
+                    print("LABELS...")
+                    print(labels)
+
                     # zero the parameter gradients
                     optimizer.zero_grad()
 
                     # forward
                     outputs = model(inputs)
+
+                    print("OUTPUTS...")
+                    print(outputs)
+                    print("SHAPE OF OUTPUTS")
+                    print(np.shape(outputs))
+
                     if not opt.PCB:
                         _, preds = torch.max(outputs.data, 1)
                         loss = criterion(outputs, labels)
@@ -362,6 +371,8 @@ def main():
     # save opts
     with open('%s/opts.json'%dir_name,'w') as fp:
         json.dump(vars(opt), fp, indent=1)
+
+    print(model)
 
     model = train_model(model, criterion, optimizer_ft, exp_lr_scheduler,
                         num_epochs=60)

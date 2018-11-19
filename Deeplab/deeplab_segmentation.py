@@ -5,11 +5,15 @@ from io import BytesIO
 import tarfile
 import tempfile
 from six.moves import urllib
+import time
+import datetime
+import random
 
 from matplotlib import gridspec
 from matplotlib import pyplot as plt
 import numpy as np
 from PIL import Image
+from PIL import ImageFilter
 
 import tensorflow as tf
 import cv2
@@ -58,7 +62,9 @@ class DeepLabModel(object):
       seg_map: Segmentation map of `resized_image`.
     """
     width, height = image.size
+    # here
     resize_ratio = 1.0 * self.INPUT_SIZE / max(width, height)
+    resize_ratio = 1.0
     target_size = (int(resize_ratio * width), int(resize_ratio * height))
     resized_image = image.convert('RGB').resize(target_size, Image.ANTIALIAS)
     batch_seg_map = self.sess.run(
@@ -157,31 +163,35 @@ FULL_COLOR_MAP = label_to_color_image(FULL_LABEL_MAP)
 def main():
     #@title Select and download models {display-mode: "form"}
 
-    MODEL_NAME = 'mobilenetv2_coco_voctrainaug'  # @param ['mobilenetv2_coco_voctrainaug', 'mobilenetv2_coco_voctrainval', 'xception_coco_voctrainaug', 'xception_coco_voctrainval']
+    # MODEL_NAME = 'xception_coco_voctrainaug'  # @param ['mobilenetv2_coco_voctrainaug', 'mobilenetv2_coco_voctrainval', 'xception_coco_voctrainaug', 'xception_coco_voctrainval']
 
-    _DOWNLOAD_URL_PREFIX = 'http://download.tensorflow.org/models/'
-    _MODEL_URLS = {
-        'mobilenetv2_coco_voctrainaug':
-            'deeplabv3_mnv2_pascal_train_aug_2018_01_29.tar.gz',
-        'mobilenetv2_coco_voctrainval':
-            'deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz',
-        'xception_coco_voctrainaug':
-            'deeplabv3_pascal_train_aug_2018_01_04.tar.gz',
-        'xception_coco_voctrainval':
-            'deeplabv3_pascal_trainval_2018_01_04.tar.gz',
-    }
-    _TARBALL_NAME = 'deeplab_model.tar.gz'
+    # _DOWNLOAD_URL_PREFIX = 'http://download.tensorflow.org/models/'
+    # _MODEL_URLS = {
+    #     'mobilenetv2_coco_voctrainaug':
+    #         'deeplabv3_mnv2_pascal_train_aug_2018_01_29.tar.gz',
+    #     'mobilenetv2_coco_voctrainval':
+    #         'deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz',
+    #     'xception_coco_voctrainaug':
+    #         'deeplabv3_pascal_train_aug_2018_01_04.tar.gz',
+    #     'xception_coco_voctrainval':
+    #         'deeplabv3_pascal_trainval_2018_01_04.tar.gz',
+    # }
+    # _TARBALL_NAME = 'deeplab_model.tar.gz'
 
-    model_dir = tempfile.mkdtemp()
-    tf.gfile.MakeDirs(model_dir)
+    # model_dir = tempfile.mkdtemp()
+    # tf.gfile.MakeDirs(model_dir)
 
-    download_path = os.path.join(model_dir, _TARBALL_NAME)
-    print('downloading model, this might take a while...')
-    urllib.request.urlretrieve(_DOWNLOAD_URL_PREFIX + _MODEL_URLS[MODEL_NAME],
-                    download_path)
-    print('download completed! loading DeepLab model...')
+    # download_path = os.path.join(model_dir, _TARBALL_NAME)
+    # print('downloading model, this might take a while...')
+    # urllib.request.urlretrieve(_DOWNLOAD_URL_PREFIX + _MODEL_URLS[MODEL_NAME],
+    #                 download_path)
+    # print('download completed! loading DeepLab model...')
 
-    MODEL = DeepLabModel(download_path)
+    # MODEL = DeepLabModel(download_path)
+
+    print('Loading DeepLab model...')
+    MODEL = DeepLabModel('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\Deeplab\\deeplabv3_pascal_trainval_2018_01_04.tar.gz')
+
     print('model loaded successfully!')
 
     #@title Run on sample images {display-mode: "form"}
@@ -195,90 +205,102 @@ def main():
     def run_visualization(url):
         """Inferences DeepLab model and visualizes result."""
         try:
-            f = urllib.request.urlopen(url)
-            jpeg_str = f.read()
-            original_im = Image.open(BytesIO(jpeg_str))
+            # f = urllib.request.urlopen(url)
+            # jpeg_str = f.read()
+            # original_im = Image.open(BytesIO(jpeg_str))
+            print(url)
+            original_im = Image.open(url)
+            original_im_enchance = original_im.filter(ImageFilter.DETAIL)
+
+            # 1,150,5
+
+            # original_im_enchance = original_im.filter(ImageFilter.UnsharpMask(radius=3, percent=200, threshold=7))
+            # original_im = original_im.filter(ImageFilter.MinFilter)
+
+            # kernel = np.array([[0,-1,0], [-1,5,-1], [0,-1,0]])
+            # original_im = cv2.filter2D(original_im, -1, kernel)
+
+            # img = img/255.0
+            # img = cv2.pow(img,0.6)
+
         except IOError:
-            print('Cannot retrieve image. Please check url: ' + url)
+            print('Cannot retrieve image. Please check file: ' + url)
             return
 
         print('running deeplab on image %s...' % url)
-        resized_im, seg_map = MODEL.run(original_im)
-   
-        seg_image = Image.fromarray(label_to_color_image(seg_map).astype(np.uint8).astype('uint8'), 'RGB')
-        
-        print(np.shape(seg_image))
-        print(type(seg_image))
-        print(type(resized_im))
+        resized_im, seg_map = MODEL.run(original_im_enchance)
+        # resized_im, seg_map = MODEL.run(original_im)
 
-        print(np.shape(convert_to_cv2_img(resized_im)))
-        print(np.shape(convert_to_cv2_img(original_im)))
-        print(np.shape(convert_to_cv2_img(seg_image)))
-    
-        process_image(convert_to_cv2_img(resized_im), convert_to_cv2_img(seg_image))
-        vis_segmentation(resized_im, seg_map)
-    
+        seg_image = Image.fromarray(label_to_color_image(seg_map).astype(np.uint8).astype('uint8'), 'RGB')
+        # print(np.shape(seg_image))
+        # print(type(seg_image))
+        # print(type(resized_im))
+        # print(np.shape(convert_to_cv2_img(resized_im)))
+        # print(np.shape(convert_to_cv2_img(original_im)))
+        # print(np.shape(convert_to_cv2_img(seg_image)))
+
+        return process_image(convert_to_cv2_img(original_im), convert_to_cv2_img(seg_image), convert_to_cv2_img(resized_im))
+        # vis_segmentation(resized_im, seg_map)
+
     def convert_to_cv2_img(pil_image):
-      pil_image = pil_image.convert('RGB') 
-      open_cv_image = np.array(pil_image) 
-      # Convert RGB to BGR 
-      open_cv_image = open_cv_image[:, :, ::-1].copy() 
+      pil_image = pil_image.convert('RGB')
+      open_cv_image = np.array(pil_image)
+      # Convert RGB to BGR
+      open_cv_image = open_cv_image[:, :, ::-1].copy()
       return open_cv_image
 
-    def remove_background(dir_path):
-      # train_path = download_path + '\\bounding_box_train'
-      # train_save_path = download_path + '\\pytorch\\train_all'
-      # if not os.path.isdir(train_save_path):
-      #     os.mkdir(train_save_path)
+    def process_image(original_im, mask_im, resize_im):
+      try:
+        # get filename and kernel size values from command line
+        img = original_im
+        mask = mask_im
+        k = 7
 
-      # for root, dirs, files in os.walk(train_path, topdown=True):
-      #     for name in files:
-      #         if not name[-3:]=='jpg':
-      #             continue
-      #         ID  = name.split('_')
-      #         src_path = train_path + '\\' + name
-      #         dst_path = train_save_path + '\\' + ID[0]
-      #         if not os.path.isdir(dst_path):
-      #             os.mkdir(dst_path)
-      #         copyfile(src_path, dst_path + '\\' + name)
+        # read and display the original image
+        # cv2.namedWindow("original", cv2.WINDOW_NORMAL)
+        # cv2.imshow("original", img)
 
-    def process_image(original_im, mask_im):
-        try:
-            # get filename and kernel size values from command line
-            img = original_im
-            mask = mask_im
-            k = 7
+        # cv2.namedWindow("resize_im", cv2.WINDOW_NORMAL)
+        # cv2.imshow("resize_im", resize_im)
 
-            # read and display the original image
-            cv2.namedWindow("original", cv2.WINDOW_NORMAL)
-            cv2.imshow("original", img)
-            # cv2.waitKey(1000)
+        # blur and grayscale before thresholding
+        blur = cv2.cvtColor(mask_im, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(blur, (k, k), 0)
 
-            # blur and grayscale before thresholding
-            blur = cv2.cvtColor(mask_im, cv2.COLOR_BGR2GRAY)
-            blur = cv2.GaussianBlur(blur, (k, k), 0)
+        # perform adaptive thresholding
+        (t, maskLayer) = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY +
+          cv2.THRESH_OTSU)
 
-            # perform adaptive thresholding
-            (t, maskLayer) = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY +
-              cv2.THRESH_OTSU)
+        # make a mask suitable for color images
+        mask = cv2.merge([maskLayer, maskLayer, maskLayer])
 
-            # make a mask suitable for color images
-            mask = cv2.merge([maskLayer, maskLayer, maskLayer])
+        # cv2.namedWindow("mask", cv2.WINDOW_NORMAL)
+        # cv2.imshow("mask", mask)
 
-            cv2.namedWindow("mask", cv2.WINDOW_NORMAL)
-            cv2.imshow("mask", mask)
-            # cv2.waitKey(1000)
+        image_rgb_nobg = cv2.bitwise_and(img, mask)
+        # cv2.namedWindow("selected", cv2.WINDOW_NORMAL)
+        # cv2.imshow("selected", image_rgb_nobg)
+        # cv2.waitKey(5000)
 
-            image_rgb_nobg = cv2.bitwise_and(img, mask)
-            cv2.namedWindow("selected", cv2.WINDOW_NORMAL)
-            cv2.imshow("selected", image_rgb_nobg)
-            cv2.waitKey(5000)
-        except IOError:
-            print('Cannot open image!')
-            return
+        return image_rgb_nobg
+      except IOError:
+        print('Cannot open image!')
+        return
 
-    image_url = IMAGE_URL or _SAMPLE_URL % SAMPLE_IMAGE
-    run_visualization(image_url)
+    def remove_background(dir_path = 'C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Market-1501-v15.09.15\\Market-1501-v15.09.15\\pytorch'):
+      if not os.path.isdir(dir_path):
+        return print("Error: No directory found")
+
+      for root, dirs, files in os.walk(dir_path, topdown=True):
+        for name in files:
+            if not name[-3:]=='jpg':
+                continue
+            image_no_bg = run_visualization(os.path.join(root, name))
+            cv2.imwrite(root+"\\"+name, image_no_bg)
+
+    remove_background('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\gal_query')
 
 if __name__ == '__main__':
-    main()
+  start_time = time.time()
+  main()
+  print("--- %s seconds ---" % (time.time() - start_time))
