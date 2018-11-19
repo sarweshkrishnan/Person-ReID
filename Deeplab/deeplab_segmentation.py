@@ -62,8 +62,7 @@ class DeepLabModel(object):
       seg_map: Segmentation map of `resized_image`.
     """
     width, height = image.size
-    # here
-    resize_ratio = 1.0 * self.INPUT_SIZE / max(width, height)
+    # resize_ratio = 1.0 * self.INPUT_SIZE / max(width, height)
     resize_ratio = 1.0
     target_size = (int(resize_ratio * width), int(resize_ratio * height))
     resized_image = image.convert('RGB').resize(target_size, Image.ANTIALIAS)
@@ -282,7 +281,31 @@ def main():
         # cv2.imshow("selected", image_rgb_nobg)
         # cv2.waitKey(5000)
 
-        return image_rgb_nobg
+        print ( mask[np.where((mask == [255,255,255]).all(axis = 2))].size )
+        print ( mask[np.where((mask == [0,0,0]).all(axis = 2))].size )
+        print ( mask.size )
+        print ( 1.0 * mask[np.where((mask == [255,255,255]).all(axis = 2))].size/mask.size )
+
+        # this is to check threshold of clear pixels from the deeplab network
+        # in case where no humans are segmented or very little is segmented so we return the original image
+        white_per_threshold =  1.0 * mask[np.where((mask == [255,255,255]).all(axis = 2))].size/mask.size
+        if white_per_threshold > 0.28:
+          random.seed(datetime.datetime.now())
+          row, column, channels = image_rgb_nobg.shape
+          # recolor black background with random pixels
+          for i in range(row):
+            for j in range(column):
+              if np.any(image_rgb_nobg[i,j] == [0,0,0]):
+                B_random = random.randint(0, 255)
+                G_random = random.randint(0, 255)
+                R_random = random.randint(0, 255)
+                image_rgb_nobg[i, j] = [B_random, G_random, R_random]
+
+          return image_rgb_nobg
+        else:
+          return img
+
+        # return image_rgb_nobg
       except IOError:
         print('Cannot open image!')
         return
@@ -298,7 +321,7 @@ def main():
             image_no_bg = run_visualization(os.path.join(root, name))
             cv2.imwrite(root+"\\"+name, image_no_bg)
 
-    remove_background('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\gal_query')
+    remove_background('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\Deeplab\\RANDVALSET')
 
 if __name__ == '__main__':
   start_time = time.time()
