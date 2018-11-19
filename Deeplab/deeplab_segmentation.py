@@ -295,7 +295,7 @@ def main():
           # recolor black background with random pixels
           for i in range(row):
             for j in range(column):
-              if np.any(image_rgb_nobg[i,j] == [0,0,0]):
+              if np.all(mask[i,j] == [0,0,0]):
                 B_random = random.randint(0, 255)
                 G_random = random.randint(0, 255)
                 R_random = random.randint(0, 255)
@@ -310,6 +310,16 @@ def main():
         print('Cannot open image!')
         return
 
+    def convert_to_png(dir_path):
+      for root, dirs, files in os.walk(dir_path, topdown=True):
+        for name in files:
+          if name[-3:]=='png':
+              img = cv2.imread(root+"\\"+name)
+              img = cv2.resize(img,(64,128))
+              cv2.imwrite(root+"\\"+name[:-3] + 'jpg', img)
+              os.remove(os.path.join(root, name))
+
+
     def remove_background(dir_path = 'C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Market-1501-v15.09.15\\Market-1501-v15.09.15\\pytorch'):
       if not os.path.isdir(dir_path):
         return print("Error: No directory found")
@@ -321,7 +331,8 @@ def main():
             image_no_bg = run_visualization(os.path.join(root, name))
             cv2.imwrite(root+"\\"+name, image_no_bg)
 
-    remove_background('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\Deeplab\\RANDVALSET')
+    # convert_to_png('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\Deeplab\\Randombkm1501-gal_query')
+    remove_background('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\Deeplab\\Test')
 
 if __name__ == '__main__':
   start_time = time.time()
