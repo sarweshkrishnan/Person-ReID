@@ -1,5 +1,3 @@
-mkdir mixed
-
 for dir in $scratch/duke/pytorch/*/ ; do
   cd $dir
   echo $dir
@@ -12,3 +10,5 @@ for dir in $scratch/duke/pytorch/*/ ; do
     mv "$id" "1$id"
   done
 done
+
+rsync -a ./market/ ./duke/
