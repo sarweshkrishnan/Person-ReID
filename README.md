@@ -6,7 +6,7 @@ Trained Models folder contains the following:
 3. ft_ResNetBackRandom - Model trained using background subtracted Market1501
 ~~3. ft_ResNetBasic	- Model trained using Market1501 without flipping and cropping augmentations~~
 
-##NOTE:
+## NOTE:
 The .mat files for the validation sets are within the valSet folder, There are are results for 2 models :
 1.  ResNetBackRandom - trained on market 1501 with background removed and filled with random pixels
 2.  ResNetMixed - trained resnet50 on market1501 & DukeMTMC datasets  
