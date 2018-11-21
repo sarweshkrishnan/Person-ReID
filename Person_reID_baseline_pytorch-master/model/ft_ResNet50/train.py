@@ -109,7 +109,7 @@ def main():
     image_datasets['train'] = datasets.ImageFolder(os.path.join(data_dir, 'train' + train_all),
                                             data_transforms['train'])
 
-
+    
     image_datasets['val'] = datasets.ImageFolder(os.path.join(data_dir, 'val'),
                                             data_transforms['val'])
 
@@ -134,10 +134,10 @@ def main():
     since = time.time()
     inputs, classes = next(iter(dataloaders['train']))
 
-
+    
     print("IMAGE_inputs........................................ :")
     print(inputs)
-
+    
     print("CLASSES............................................. :")
     print(classes)
 
@@ -200,7 +200,6 @@ def main():
 
                     print("LABELS...")
                     print(labels)
-                    print(np.shape(labels))
 
                     # zero the parameter gradients
                     optimizer.zero_grad()
@@ -216,12 +215,6 @@ def main():
                     if not opt.PCB:
                         _, preds = torch.max(outputs.data, 1)
                         loss = criterion(outputs, labels)
-                        print(labels)
-                        print(np.shape(labels))
-                        print("OUTPUTS...")
-                        print(outputs)
-                        print("SHAPE OF OUTPUTS")
-                        print(np.shape(outputs))
                     else:
                         part = {}
                         sm = nn.Softmax(dim=1)
@@ -250,12 +243,12 @@ def main():
 
                 epoch_loss = running_loss / dataset_sizes[phase]
                 epoch_acc = running_corrects / dataset_sizes[phase]
-
+                
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
-
+                
                 y_loss[phase].append(epoch_loss)
-                y_err[phase].append(1.0-epoch_acc)
+                y_err[phase].append(1.0-epoch_acc)            
                 # deep copy the model
                 if phase == 'val':
                     last_model_wts = model.state_dict()
@@ -337,7 +330,7 @@ def main():
             ], weight_decay=5e-4, momentum=0.9, nesterov=True)
     else:
         ignored_params = list(map(id, model.model.fc.parameters() ))
-        ignored_params += (list(map(id, model.classifier0.parameters() ))
+        ignored_params += (list(map(id, model.classifier0.parameters() )) 
                         +list(map(id, model.classifier1.parameters() ))
                         +list(map(id, model.classifier2.parameters() ))
                         +list(map(id, model.classifier3.parameters() ))
@@ -367,7 +360,7 @@ def main():
     # Train and evaluate
     # ^^^^^^^^^^^^^^^^^^
     #
-    # It should take around 1-2 hours on GPU.
+    # It should take around 1-2 hours on GPU. 
     #
     dir_name = os.path.join('./model',name)
     if not os.path.isdir(dir_name):

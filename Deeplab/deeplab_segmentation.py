@@ -332,7 +332,7 @@ def main():
             cv2.imwrite(root+"\\"+name, image_no_bg)
 
     # convert_to_png('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\Deeplab\\Randombkm1501-gal_query')
-    remove_background('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\Deeplab\\Test')
+    remove_background('C:\\Users\\John\\Documents\\TAMU\\CSCE625\\DL\\Project_Repo\\Deeplab\\DukeMTMC-reID')
 
 if __name__ == '__main__':
   start_time = time.time()
